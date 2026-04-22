@@ -1497,14 +1497,37 @@
   .topbar {
     background: rgba(255, 248, 230, 0.95);
     background-image: url(images/peetathipathis.jpg);
+    background-size: cover;
+    background-position: center;
     backdrop-filter: blur(8px);
   }
+  @media (max-width: 768px) {
+  .brand-mark img {
+    width: 38px;
+    height: 38px;
+  }
+}
+@media (max-width: 768px) {
+  .nav-links {
+    background: #fff7df;
+    padding: 1.2rem;
+    border-radius: 16px;
+  }
 
-  /* Menu text color for mobile */
   .nav-links a {
     color: #2c1a0b;
-    font-size: 14px;
+    font-size: 16px;
+    margin: 10px 0;
+    display: block;
+    text-align: center;
     font-weight: 600;
+  }
+
+  .donate-link {
+    background: none;
+    color: #2c1a0b;
+  }
+    
   }
 
   /* Menu button (EN/TA) */
