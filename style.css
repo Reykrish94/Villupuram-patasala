@@ -1490,3 +1490,24 @@
         min-height: 260px;
       }
     }
+    @media (max-width: 768px) {
+
+  /* Navbar background only for mobile */
+  .topbar {
+    background: rgba(255, 248, 230, 0.95);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Menu text color for mobile */
+  .nav-links a {
+    color: #2c1a0b;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* Menu button (EN/TA) */
+  .lang-toggle {
+    color: #2c1a0b;
+  }
+
+}
