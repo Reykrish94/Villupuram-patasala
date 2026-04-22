@@ -1495,11 +1495,15 @@
 
   /* Navbar background only for mobile */
   .topbar {
-    background: rgba(255, 248, 230, 0.95);
-    background-image: url(images/peetathipathis.jpg);
-    background-size: cover;
-    background-position: center;
-    backdrop-filter: blur(8px);
+     position: sticky;
+      top: 0;
+      z-index: 1000;
+      background:
+        linear-gradient(rgba(92, 40, 12, 0.72), rgba(92, 40, 12, 0.72)),
+        url("images/peetathipathis.jpg") center 25%/cover no-repeat;
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255, 219, 142, 0.2);
+      box-shadow: 0 8px 24px rgba(98, 45, 14, 0.2);
   }
   @media (max-width: 768px) {
   .brand-mark img {
