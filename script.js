@@ -238,7 +238,14 @@
 
     let currentLanguage = "en";
 
+    function bindIfPresent(element, eventName, handler) {
+      if (element) {
+        element.addEventListener(eventName, handler);
+      }
+    }
+
     function updateMusicButton() {
+      if (!devotionalAudio || !musicToggle) return;
       const key = devotionalAudio.paused ? "musicToggle" : "musicPlaying";
       musicToggle.textContent = translations[currentLanguage][key];
     }
@@ -277,20 +284,54 @@
       updateMusicButton();
     }
 
-    langToggle.addEventListener("click", () => {
+    applyTranslations = function(language) {
+      document.querySelectorAll("[data-i18n]").forEach((element) => {
+        const key = element.dataset.i18n;
+        if (translations[language][key]) {
+          element.textContent = translations[language][key];
+        }
+      });
+
+      const nameInput = document.getElementById("name");
+      const ageInput = document.getElementById("age");
+      const contactInput = document.getElementById("contactNumber");
+      const courseSelect = document.getElementById("course");
+
+      document.title = language === "ta"
+        ? "Villupuram Sankara Madam - ஸ்ரீ மஹா பெரியவா"
+        : "Villupuram Sankara Madam - Shri Maha Periyava's Birth Place";
+      root.lang = language;
+
+      if (langLabel) langLabel.textContent = language === "ta" ? "தமிழ்" : "English";
+      if (nameInput) nameInput.placeholder = language === "ta" ? "முழுப் பெயரை உள்ளிடவும்" : "Enter full name";
+      if (ageInput) ageInput.placeholder = language === "ta" ? "வயதை உள்ளிடவும்" : "Enter age";
+      if (contactInput) contactInput.placeholder = language === "ta" ? "பெற்றோர் கைபேசி எண்" : "Parent mobile number";
+      if (courseSelect && courseSelect.options[0]) {
+        courseSelect.options[0].textContent = translations[language].formSelectCourse;
+      }
+
+      updateMusicButton();
+    };
+
+    bindIfPresent(langToggle, "click", () => {
       currentLanguage = currentLanguage === "en" ? "ta" : "en";
       applyTranslations(currentLanguage);
     });
 
-    menuToggle.addEventListener("click", () => {
-      navLinks.classList.toggle("open");
+    bindIfPresent(menuToggle, "click", () => {
+      if (navLinks) {
+        navLinks.classList.toggle("open");
+      }
     });
 
     document.querySelectorAll(".nav-links a").forEach((link) => {
-      link.addEventListener("click", () => navLinks.classList.remove("open"));
+      link.addEventListener("click", () => {
+        if (navLinks) navLinks.classList.remove("open");
+      });
     });
 
-    musicToggle.addEventListener("click", () => {
+    bindIfPresent(musicToggle, "click", () => {
+      if (!devotionalAudio) return;
       if (devotionalAudio.paused) {
         devotionalAudio.play().catch(() => {
           const message = currentLanguage === "ta"
@@ -304,17 +345,17 @@
       updateMusicButton();
     });
 
-    devotionalAudio.addEventListener("play", updateMusicButton);
-    devotionalAudio.addEventListener("pause", updateMusicButton);
-    devotionalAudio.addEventListener("ended", updateMusicButton);
+    bindIfPresent(devotionalAudio, "play", updateMusicButton);
+    bindIfPresent(devotionalAudio, "pause", updateMusicButton);
+    bindIfPresent(devotionalAudio, "ended", updateMusicButton);
 
-    admissionForm.addEventListener("submit", (event) => {
+    bindIfPresent(admissionForm, "submit", (event) => {
       event.preventDefault();
       const message = currentLanguage === "ta"
         ? "உங்கள் சேர்க்கை விண்ணப்பம் பெறப்பட்டது. இது தற்போது மாதிரி படிவம்."
         : "Your admission request has been received. This is currently a placeholder form.";
       alert(message);
-      admissionForm.reset();
+      if (admissionForm) admissionForm.reset();
     });
 
     const observer = new IntersectionObserver((entries) => {
@@ -336,7 +377,7 @@
       }
     });
 
-    scrollTopButton.addEventListener("click", () => {
+    bindIfPresent(scrollTopButton, "click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
 
@@ -349,13 +390,14 @@
     });
 
     function closeLightbox() {
+      if (!lightbox || !lightboxImage) return;
       lightbox.classList.remove("open");
       lightbox.setAttribute("aria-hidden", "true");
       lightboxImage.src = "";
     }
 
-    lightboxClose.addEventListener("click", closeLightbox);
-    lightbox.addEventListener("click", (event) => {
+    bindIfPresent(lightboxClose, "click", closeLightbox);
+    bindIfPresent(lightbox, "click", (event) => {
       if (event.target === lightbox) closeLightbox();
     });
 
@@ -364,3 +406,252 @@
     });
 
     applyTranslations(currentLanguage);
+
+    (() => {
+      const galleryGrid = document.getElementById("galleryGrid");
+      const galleryFilters = document.getElementById("galleryFilters");
+      const galleryLoadMore = document.getElementById("galleryLoadMore");
+      const lightboxPrev = document.getElementById("lightboxPrev");
+      const lightboxNext = document.getElementById("lightboxNext");
+      const lightboxCaption = document.getElementById("lightboxCaption");
+
+      if (!galleryGrid || !galleryFilters || !galleryLoadMore || !lightboxPrev || !lightboxNext || !lightboxCaption) {
+        return;
+      }
+
+      const galleryUiLabels = {
+        en: {
+          loadMore: "Load More",
+          filters: {
+            all: "All",
+            temple: "Temple",
+            vedaclass: "Veda Class",
+            pooja: "Pooja",
+            festivals: "Festivals"
+          },
+          categories: {
+            temple: "Temple",
+            vedaclass: "Veda Class",
+            pooja: "Pooja",
+            festivals: "Festivals"
+          }
+        },
+        ta: {
+          loadMore: "மேலும் காண்க",
+          filters: {
+            all: "அனைத்தும்",
+            temple: "ஆலயம்",
+            vedaclass: "வேத வகுப்பு",
+            pooja: "பூஜை",
+            festivals: "விழாக்கள்"
+          },
+          categories: {
+            temple: "ஆலயம்",
+            vedaclass: "வேத வகுப்பு",
+            pooja: "பூஜை",
+            festivals: "விழாக்கள்"
+          }
+        }
+      };
+
+      const galleryFilterOrder = ["all", "temple", "pooja", "vedaclass", "festivals"];
+      const galleryImageFiles = [
+        "Temple1.webp",
+        "Temple2.jpeg",
+        "Temple3.jpg",
+        "Temple4.jpg",
+        "Pooja1.jpg",
+        "Pooja2.jpg",
+        "Pooja3.jpeg",
+        "Pooja5.jpeg",
+        "Veda Class1.png",
+        "Veda Class2.jpeg",
+        "Festivals1.jpg",
+        "Festivals2.jpg",
+        "Festivals3.jpg",
+        "Festivals4.jpeg",
+      ];
+
+      const captionOverrides = {
+        "Villupuram Sankara Matam (3).webp": { en: "Temple View", ta: "ஆலய தோற்றம்" },
+        "patasala.jpeg":{ en: "Pooja Moments", ta: "பூஜை தருணங்கள்" },
+        "WhatsApp Image 2026-04-19 at 1.48.54 PM.jpeg": { en: "Veda Class", ta: "வேத வகுப்பு" },
+        "WhatsApp Image 2026-04-19 at 1.49.58 PM.jpeg": { en: "Festival Decor", ta: "விழா அலங்காரம்" },
+        "WhatsApp Image 2026-04-19 at 1.50.26 PM.jpeg": { en: "Sacred Gathering", ta: "புனித கூடுகை" },
+        "WhatsApp Image 2026-04-19 at 1.50.41 PM.jpeg": { en: "Temple Devotion", ta: "ஆலய பக்தி" },
+        "birth place.jpg": { en: "Birthplace Darshan", ta: "அவதார ஸ்தல தரிசனம்" },
+        "cover photo.jpeg": { en: "Temple Entrance", ta: "ஆலய நுழைவாயில்" },
+        "diwali.jpg": { en: "Deepavali Festival", ta: "தீபாவளி விழா" },
+        "navratri.jpg": { en: "Navaratri Celebration", ta: "நவராத்திரி விழா" },
+        "patasala class.png": { en: "Patasala Class", ta: "பாடசாலை வகுப்பு" },
+        "peetathipathis.jpg": { en: "Acharya Blessings", ta: "ஆசார்யர் தரிசனம்" },
+        "periyava.jpg": { en: "Maha Periyava Darshan", ta: "மஹா பெரியவா தரிசனம்" },
+        "Shankaracharya-Swamiji.webp": { en: "Shankaracharya Swamiji", ta: "சங்கராசார்யர் ஸ்வாமிகள்" },
+        "sivrathri.jpg": { en: "Maha Shivaratri", ta: "மஹா சிவராத்திரி" }
+      };
+
+      let activeCategory = "all";
+      let visibleCount = 6;
+      let lightboxIndex = 0;
+
+      function filePath(fileName) {
+        return encodeURI(`images/${fileName}`);
+      }
+
+      function detectCategory(fileName) {
+        const name = fileName.toLowerCase();
+        if (name.includes("pooja") || name.includes("periyava") || name.includes("swamiji")) return "pooja";
+        if (name.includes("veda") || name.includes("class") || name.includes("patasala class")) return "vedaclass";
+        if (name.includes("festival") || name.includes("diwali") || name.includes("navratri") || name.includes("sivrathri") || name.includes("shivaratri")) return "festivals";
+        return "temple";
+      }
+
+      function titleFromFile(fileName) {
+        return fileName
+          .replace(/\.[^/.]+$/, "")
+          .replace(/[_-]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .replace(/\b\w/g, (char) => char.toUpperCase());
+      }
+
+      const galleryImages = galleryImageFiles.map((fileName, index) => ({
+        id: index,
+        fileName,
+        src: filePath(fileName),
+        category: detectCategory(fileName),
+        captions: captionOverrides[fileName] || {
+          en: titleFromFile(fileName),
+          ta: titleFromFile(fileName)
+        }
+      }));
+
+      function categoryLabel(category) {
+        return galleryUiLabels[currentLanguage].categories[category];
+      }
+
+      function categoryDecoratedLabel(category) {
+        const icons = {
+          temple: "🔔",
+          pooja: "🌸",
+          vedaclass: "📖",
+          festivals: "🪔"
+        };
+
+        return `${icons[category] || "🌸"} ${categoryLabel(category)}`;
+      }
+
+      function filteredImages() {
+        if (activeCategory === "all") return galleryImages;
+        return galleryImages.filter((image) => image.category === activeCategory);
+      }
+
+      function renderFilters() {
+        galleryFilters.innerHTML = "";
+        galleryFilterOrder.forEach((filterKey) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `gallery-filter-btn${filterKey === activeCategory ? " active" : ""}`;
+          button.textContent = galleryUiLabels[currentLanguage].filters[filterKey];
+          button.addEventListener("click", () => {
+            activeCategory = filterKey;
+            visibleCount = 6;
+            renderFilters();
+            renderGallery();
+          });
+          galleryFilters.appendChild(button);
+        });
+      }
+
+      function openGalleryLightbox(imageId) {
+        const items = filteredImages();
+        lightboxIndex = Math.max(0, items.findIndex((image) => image.id === imageId));
+        updateGalleryLightbox();
+        lightbox.classList.add("open");
+        lightbox.setAttribute("aria-hidden", "false");
+      }
+
+      function updateGalleryLightbox() {
+        const items = filteredImages();
+        const image = items[lightboxIndex];
+        if (!image) return;
+        lightboxImage.src = image.src;
+        lightboxImage.alt = image.captions[currentLanguage];
+        lightboxCaption.textContent = `${image.captions[currentLanguage]} • ${categoryLabel(image.category)}`;
+      }
+
+      function moveGalleryLightbox(step) {
+        const items = filteredImages();
+        if (!items.length) return;
+        lightboxIndex = (lightboxIndex + step + items.length) % items.length;
+        updateGalleryLightbox();
+      }
+
+      function renderGallery() {
+        const items = filteredImages();
+        const visibleItems = items.slice(0, visibleCount);
+
+        galleryGrid.innerHTML = "";
+
+        if (!visibleItems.length) {
+          galleryGrid.innerHTML = `
+            <div class="gallery-empty-state fade-up visible">
+              <p>${currentLanguage === "ta" ? "படங்கள் இன்னும் சேர்க்கப்படவில்லை." : "Gallery images are not added yet."}</p>
+            </div>
+          `;
+          galleryLoadMore.hidden = true;
+          return;
+        }
+
+        visibleItems.forEach((image, index) => {
+          const card = document.createElement("article");
+          card.className = "gallery-item fade-up visible";
+          card.dataset.category = image.category;
+          card.innerHTML = `
+            <img src="${image.src}" alt="Gallery image" loading="lazy">
+              <div class="gallery-meta">🌸 ${categoryLabel(image.category)}</div>
+            </div>
+          `;
+          card.innerHTML = `
+            <img src="${image.src}" alt="Gallery image" loading="lazy">
+            <div class="gallery-meta">${categoryDecoratedLabel(image.category)}</div>
+          `;
+          card.style.transitionDelay = `${Math.min(index * 40, 240)}ms`;
+          card.addEventListener("click", () => openGalleryLightbox(image.id));
+          galleryGrid.appendChild(card);
+        });
+
+        galleryLoadMore.hidden = visibleCount >= items.length;
+        galleryLoadMore.textContent = galleryUiLabels[currentLanguage].loadMore;
+      }
+
+      bindIfPresent(galleryLoadMore, "click", () => {
+        visibleCount += 6;
+        renderGallery();
+      });
+
+      bindIfPresent(lightboxPrev, "click", (event) => {
+        event.stopPropagation();
+        moveGalleryLightbox(-1);
+      });
+
+      bindIfPresent(lightboxNext, "click", (event) => {
+        event.stopPropagation();
+        moveGalleryLightbox(1);
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (!lightbox.classList.contains("open")) return;
+        if (event.key === "ArrowLeft") moveGalleryLightbox(-1);
+        if (event.key === "ArrowRight") moveGalleryLightbox(1);
+      });
+
+      bindIfPresent(langToggle, "click", () => {
+        renderFilters();
+        renderGallery();
+        if (lightbox.classList.contains("open")) updateGalleryLightbox();
+      });
+
+      renderFilters();
+      renderGallery();
+    })();
