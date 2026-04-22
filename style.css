@@ -1490,11 +1490,13 @@
         min-height: 260px;
       }
     }
+
     @media (max-width: 768px) {
 
   /* Navbar background only for mobile */
   .topbar {
     background: rgba(255, 248, 230, 0.95);
+    background-image: url(images/peetathipathis.jpg);
     backdrop-filter: blur(8px);
   }
 
